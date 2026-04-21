@@ -9,7 +9,7 @@ package com.poc.tracking.model;
  *   <li>{@link #EVENT_DRIVEN} - Modelo baseado em eventos (Grupo Experimental).</li>
  * </ul>
  *
- * @author PoC Team
+ * @author Mauricio Nogueira
  * @version 1.0.0
  */
 public enum Scenario {

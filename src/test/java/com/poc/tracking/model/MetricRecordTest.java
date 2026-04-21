@@ -10,7 +10,7 @@ import static org.assertj.core.api.Assertions.*;
 /**
  * Testes unitários para o record {@link MetricRecord}.
  *
- * @author PoC Team
+ * @author Mauricio Nogueira
  * @version 1.0.0
  */
 @DisplayName("MetricRecord - Testes Unitários")

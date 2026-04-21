@@ -17,7 +17,7 @@ import java.util.UUID;
  * @param timestamp     Instante em que o evento foi gerado.
  * @param scenario      Cenário ao qual o evento pertence (POLLING ou EVENT_DRIVEN).
  *
- * @author PoC Team
+ * @author Mauricio Nogueira
  * @version 1.0.0
  */
 public record TrackingEvent(

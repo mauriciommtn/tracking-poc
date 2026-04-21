@@ -19,7 +19,7 @@ import static org.assertj.core.api.Assertions.*;
  * <p>Cobre geração de eventos individuais, em lote, validação de parâmetros,
  * reset de contador e progressão de status de entrega.
  *
- * @author PoC Team
+ * @author Mauricio Nogueira
  * @version 1.0.0
  */
 @DisplayName("EventEmulator - Testes Unitários")

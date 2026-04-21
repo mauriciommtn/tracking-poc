@@ -26,7 +26,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
  * <p>O endpoint SSE ({@code /stream}) é testado pela verificação de que
  * o stream é iniciado corretamente e tem o content-type adequado.
  *
- * @author PoC Team
+ * @author Mauricio Nogueira
  * @version 1.0.0
  */
 @SpringBootTest

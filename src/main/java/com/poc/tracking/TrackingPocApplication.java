@@ -20,7 +20,7 @@ import org.springframework.scheduling.annotation.EnableScheduling;
  *   <li>{@code PerformanceMonitor} - Coleta métricas de latência e throughput via Micrometer/Prometheus.</li>
  * </ul>
  *
- * @author PoC Team
+ * @author Mauricio Nogueira
  * @version 1.0.0
  */
 @SpringBootApplication

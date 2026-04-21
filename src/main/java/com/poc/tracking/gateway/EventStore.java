@@ -18,7 +18,7 @@ import java.util.concurrent.ConcurrentHashMap;
  * No Cenário 2 (Event-Driven), os eventos são publicados assim que chegam,
  * sem necessidade de consulta periódica.
  *
- * @author PoC Team
+ * @author Mauricio Nogueira
  * @version 1.0.0
  */
 @Component

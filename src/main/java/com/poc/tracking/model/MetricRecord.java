@@ -13,7 +13,7 @@ import java.time.Instant;
  * @param latencyMs     Latência medida em milissegundos.
  * @param collectedAt   Instante em que a métrica foi coletada.
  *
- * @author PoC Team
+ * @author Mauricio Nogueira
  * @version 1.0.0
  */
 public record MetricRecord(

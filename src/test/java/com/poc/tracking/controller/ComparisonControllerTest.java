@@ -22,7 +22,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
  * <p>Valida o fluxo completo de comparação entre os cenários Polling e Event-Driven,
  * incluindo execução conjunta, geração de relatório e reset de estado.
  *
- * @author PoC Team
+ * @author Mauricio Nogueira
  * @version 1.0.0
  */
 @SpringBootTest

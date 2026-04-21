@@ -26,7 +26,7 @@ import java.util.concurrent.atomic.AtomicInteger;
  *   <li>{@code tracking.emulator.event-interval-ms} - Intervalo entre eventos gerados.</li>
  * </ul>
  *
- * @author PoC Team
+ * @author Mauricio Nogueira
  * @version 1.0.0
  * @see TrackingEvent
  */

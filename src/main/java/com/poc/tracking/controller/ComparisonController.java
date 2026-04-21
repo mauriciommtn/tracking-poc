@@ -1,20 +1,27 @@
 package com.poc.tracking.controller;
 
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+
 import com.poc.tracking.emulator.EventEmulator;
 import com.poc.tracking.gateway.ApiGateway;
 import com.poc.tracking.gateway.EventStore;
 import com.poc.tracking.metrics.PerformanceMonitor;
 import com.poc.tracking.model.Scenario;
 import com.poc.tracking.model.TrackingEvent;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
-
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
 
 /**
  * Controller de comparação entre os dois cenários da PoC.
@@ -29,9 +36,10 @@ import java.util.Map;
  *   <li>{@code DELETE /api/comparison/reset} - Reseta estado para novo experimento.</li>
  * </ul>
  *
- * @author PoC Team
+ * @author Mauricio Nogueira
  * @version 1.0.0
  */
+@CrossOrigin(origins = "*")
 @RestController
 @RequestMapping("/api/comparison")
 public class ComparisonController {
@@ -60,6 +68,37 @@ public class ComparisonController {
         this.gateway = gateway;
         this.eventStore = eventStore;
         this.monitor = monitor;
+    }
+    
+    
+    @GetMapping("/execute")
+    public ResponseEntity<Map<String, Object>> runGetComparison(
+            @RequestParam(required = false) Integer quantity) {
+
+        int count = (quantity != null && quantity > 0) ? quantity : totalEvents;
+        log.info("Iniciando comparação completa com {} eventos por cenário.", count);
+
+        // Reset estado
+        emulator.reset();
+        eventStore.clearAll();
+        monitor.reset();
+
+        // Cenário 1: Polling
+        List<TrackingEvent> pollingEvents = emulator.generateBatch("ORDER-COMP-POLL", count, Scenario.POLLING);
+        pollingEvents.forEach(gateway::process);
+
+        // Cenário 2: Event-Driven
+        List<TrackingEvent> eventDrivenEvents = emulator.generateBatch("ORDER-COMP-EVT", count, Scenario.EVENT_DRIVEN);
+        eventDrivenEvents.forEach(gateway::process);
+
+        Map<String, Object> result = new LinkedHashMap<>();
+        result.put("eventsPerScenario", count);
+        result.put("polling", monitor.getStatistics(Scenario.POLLING));
+        result.put("eventDriven", monitor.getStatistics(Scenario.EVENT_DRIVEN));
+        result.put("latenciesPoll", monitor.getRawLatencies(Scenario.POLLING));
+        result.put("latenciesEvent", monitor.getRawLatencies(Scenario.EVENT_DRIVEN));
+
+        return ResponseEntity.ok(result);
     }
 
     /**

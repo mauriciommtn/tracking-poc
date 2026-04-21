@@ -25,7 +25,7 @@ import java.util.Objects;
  * <p>O {@link Sinks.Many} é configurado como multicast com buffer para suportar
  * múltiplos subscribers (clientes SSE) simultaneamente.
  *
- * @author PoC Team
+ * @author Mauricio Nogueira
  * @version 1.0.0
  * @see EventStore
  * @see PerformanceMonitor

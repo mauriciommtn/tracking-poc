@@ -1,13 +1,16 @@
 package com.poc.tracking.config;
 
-import io.micrometer.core.instrument.MeterRegistry;
-import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
+import java.util.concurrent.Executor;
+
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
+import org.springframework.web.servlet.config.annotation.CorsRegistry;
+import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
-import java.util.concurrent.Executor;
+import io.micrometer.core.instrument.MeterRegistry;
+import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
 
 /**
  * Configuração principal da aplicação de PoC de Rastreamento.
@@ -15,7 +18,7 @@ import java.util.concurrent.Executor;
  * <p>Define beans de infraestrutura como executor assíncrono e registry de métricas.
  * O {@link SimpleMeterRegistry} é utilizado como fallback para ambientes sem Prometheus.
  *
- * @author PoC Team
+ * @author Mauricio Nogueira
  * @version 1.0.0
  */
 @Configuration
@@ -56,4 +59,5 @@ public class AppConfig {
     public MeterRegistry simpleMeterRegistry() {
         return new SimpleMeterRegistry();
     }
+
 }

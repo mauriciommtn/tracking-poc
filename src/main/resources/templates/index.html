@@ -1,0 +1,528 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Tracking PoC — Performance Analytics</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet"/>
+  <style>
+    :root {
+      --poll: #f97316; --evt: #06b6d4; --accent: #a78bfa;
+      --bg: #0a0e1a; --card: #0f1629; --border: #1e2d4a;
+      --text: #e2e8f0; --muted: #64748b;
+    }
+    *{box-sizing:border-box;margin:0;padding:0}
+    body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;min-height:100vh}
+    ::-webkit-scrollbar{width:6px}::-webkit-scrollbar-track{background:var(--bg)}::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
+    header{border-bottom:1px solid var(--border);padding:14px 28px;display:flex;align-items:center;justify-content:space-between}
+    .logo{display:flex;align-items:center;gap:12px}
+    .logo-icon{width:38px;height:38px;border-radius:10px;background:linear-gradient(135deg,#06b6d4,#a78bfa);display:flex;align-items:center;justify-content:center;font-size:20px}
+    .logo-title{font-family:'Space Mono',monospace;font-weight:700;font-size:14px;color:#f1f5f9}
+    .logo-sub{font-size:10px;color:var(--muted);letter-spacing:3px}
+    .status-wrap{display:flex;align-items:center;gap:6px;font-family:'Space Mono',monospace;font-size:11px;color:var(--muted)}
+    .status-dot{width:8px;height:8px;border-radius:50%;display:inline-block}
+    .controls{padding:14px 28px;border-bottom:1px solid var(--border);display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+    input[type=text],input[type=number]{background:var(--card);border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:'Space Mono',monospace;font-size:12px;padding:8px 12px;outline:none}
+    input:focus{border-color:var(--evt)}
+    .btn{border:none;border-radius:8px;padding:8px 16px;cursor:pointer;font-size:12px;font-family:'Space Mono',monospace;font-weight:700;letter-spacing:1px;transition:opacity .15s,transform .15s}
+    .btn:hover:not(:disabled){opacity:.82;transform:translateY(-1px)}
+    .btn:disabled{opacity:.35;cursor:not-allowed}
+    .btn-evt{background:rgba(6,182,212,.15);color:var(--evt);border:1px solid rgba(6,182,212,.35)}
+    .btn-acc{background:rgba(167,139,250,.15);color:var(--accent);border:1px solid rgba(167,139,250,.35)}
+    .btn-poll{background:rgba(249,115,22,.12);color:var(--poll);border:1px solid rgba(249,115,22,.35)}
+    .btn-grn{background:rgba(74,222,128,.12);color:#4ade80;border:1px solid rgba(74,222,128,.35)}
+    .sep{width:1px;height:26px;background:var(--border)}
+    .banner{margin:18px 28px 0;padding:14px 22px;background:linear-gradient(90deg,rgba(6,182,212,.07),rgba(167,139,250,.07));border:1px solid rgba(6,182,212,.22);border-radius:12px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px}
+    .banner-main{display:flex;align-items:center;gap:12px}
+    .banner-title{font-family:'Space Mono',monospace;font-weight:700;font-size:14px;color:#f1f5f9}
+    .banner-sub{font-size:12px;color:var(--muted);margin-top:2px}
+    .banner-nums{display:flex;gap:20px}
+    .banner-num{text-align:center}
+    .banner-num-val{font-family:'Space Mono',monospace;font-weight:700;font-size:15px}
+    .banner-num-lbl{font-size:10px;color:var(--muted)}
+    .cards{padding:16px 28px 0;display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px}
+    .card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:16px 18px;display:flex;flex-direction:column;gap:8px}
+    .card-label{font-family:'Space Mono',monospace;font-size:10px;color:var(--muted);letter-spacing:2px;text-transform:uppercase}
+    .card-values{display:flex;justify-content:space-between;align-items:flex-end}
+    .card-val{font-family:'Space Mono',monospace;font-size:22px;font-weight:700}
+    .card-val span{font-size:11px;margin-left:2px}
+    .card-lbl-sm{font-size:10px;color:var(--muted);margin-top:1px}
+    .card-badge{border-radius:6px;padding:3px 9px;font-size:11px;font-family:'Space Mono',monospace;min-height:20px}
+    .tabs{padding:16px 28px 0;display:flex;gap:8px;flex-wrap:wrap}
+    .tab{background:none;border:1px solid transparent;border-radius:8px;padding:6px 14px;cursor:pointer;font-size:11px;font-family:'Space Mono',monospace;letter-spacing:1px;color:var(--muted);transition:all .18s}
+    .tab:hover{color:#94a3b8;border-color:var(--border)}
+    .tab.active{background:rgba(6,182,212,.1);border-color:rgba(6,182,212,.4);color:var(--evt)}
+    .panels{padding:14px 28px 40px}
+    .panel{display:none}
+    .panel.active{display:block}
+    .chart-card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:20px 16px}
+    .chart-title{font-family:'Space Mono',monospace;font-size:11px;color:var(--muted);letter-spacing:2px;margin-bottom:14px}
+    .grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+    .chart-wrap{position:relative;height:280px}
+    .chart-wrap-tall{position:relative;height:360px}
+    textarea{width:100%;background:#0a0c14;border:1px solid var(--border);border-radius:8px;color:#4ade80;font-family:'Space Mono',monospace;font-size:11px;padding:14px;outline:none;resize:vertical;line-height:1.65}
+    .raw-tip{margin-top:10px;font-size:11px;color:#475569;font-family:'Space Mono',monospace}
+    #overlay{position:fixed;inset:0;background:rgba(10,14,26,.93);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;z-index:999;transition:opacity .35s}
+    #overlay.hidden{opacity:0;pointer-events:none}
+    .spinner{width:44px;height:44px;border:3px solid var(--border);border-top-color:var(--evt);border-radius:50%;animation:spin .75s linear infinite}
+    @keyframes spin{to{transform:rotate(360deg)}}
+    .spin-txt{font-family:'Space Mono',monospace;font-size:12px;color:var(--muted);letter-spacing:3px}
+  </style>
+</head>
+<body>
+
+<div id="overlay"><div class="spinner"></div><div class="spin-txt">CARREGANDO...</div></div>
+
+<header>
+  <div class="logo">
+    <div class="logo-icon">&#9889;</div>
+    <div>
+      <div class="logo-title">TRACKING POC</div>
+      <div class="logo-sub">PERFORMANCE ANALYTICS</div>
+    </div>
+  </div>
+  <div class="status-wrap">
+    <span class="status-dot" id="statusDot" style="background:#f59e0b;box-shadow:0 0 7px #f59e0b"></span>
+    <span id="statusTxt">DEMO</span>
+  </div>
+</header>
+
+<div class="controls">
+  <input type="text" id="apiUrl" value="http://localhost:8080" style="width:220px" placeholder="http://localhost:8080"/>
+  <button class="btn btn-evt" id="btnFetch" onclick="fetchMetrics()">&#8595; Buscar Métricas</button>
+  <input type="number" id="simQty" value="100" min="10" max="1000" style="width:82px" title="Qtd. de eventos"/>
+  <button class="btn btn-acc" id="btnSim" onclick="runSimulation()">&#9654; Simular + Buscar</button>
+  <div class="sep"></div>
+  <input type="file" id="fileInput" accept=".txt,.prom,text/plain" style="display:none" onchange="importFile(event)"/>
+  <button class="btn btn-poll" onclick="document.getElementById('fileInput').click()">&#128193; Importar .prom</button>
+  <button class="btn btn-grn" onclick="exportCSV()">&#8593; CSV</button>
+  <button class="btn btn-grn" onclick="exportJSON()">&#8593; JSON</button>
+</div>
+
+<div class="banner">
+  <div class="banner-main">
+    <span style="font-size:24px">&#128640;</span>
+    <div>
+      <div class="banner-title">Event-Driven é <span id="bannerPct" style="color:var(--evt)">&#8212;</span> mais rápido</div>
+      <div class="banner-sub" id="bannerSub">Carregando dados de demonstração...</div>
+    </div>
+  </div>
+  <div class="banner-nums">
+    <div class="banner-num">
+      <div class="banner-num-val" id="cntPoll" style="color:var(--poll)">0</div>
+      <div class="banner-num-lbl">EVENTOS POLL</div>
+    </div>
+    <div class="banner-num">
+      <div class="banner-num-val" id="cntEvt" style="color:var(--evt)">0</div>
+      <div class="banner-num-lbl">EVENTOS EVT</div>
+    </div>
+  </div>
+</div>
+
+<div class="cards">
+  <div class="card">
+    <div class="card-label">Latência Média</div>
+    <div class="card-values">
+      <div><div class="card-val" id="meanPoll" style="color:var(--poll)">&#8212;<span>ms</span></div><div class="card-lbl-sm">POLLING</div></div>
+      <div style="text-align:right"><div class="card-val" id="meanEvt" style="color:var(--evt)">&#8212;<span>ms</span></div><div class="card-lbl-sm">EVENT-DRIVEN</div></div>
+    </div>
+    <div class="card-badge" id="meanBadge"></div>
+  </div>
+  <div class="card">
+    <div class="card-label">Percentil P50 (Mediana)</div>
+    <div class="card-values">
+      <div><div class="card-val" id="p50Poll" style="color:var(--poll)">&#8212;<span>ms</span></div><div class="card-lbl-sm">POLLING</div></div>
+      <div style="text-align:right"><div class="card-val" id="p50Evt" style="color:var(--evt)">&#8212;<span>ms</span></div><div class="card-lbl-sm">EVENT-DRIVEN</div></div>
+    </div>
+    <div class="card-badge" id="p50Badge"></div>
+  </div>
+  <div class="card">
+    <div class="card-label">Percentil P95</div>
+    <div class="card-values">
+      <div><div class="card-val" id="p95Poll" style="color:var(--poll)">&#8212;<span>ms</span></div><div class="card-lbl-sm">POLLING</div></div>
+      <div style="text-align:right"><div class="card-val" id="p95Evt" style="color:var(--evt)">&#8212;<span>ms</span></div><div class="card-lbl-sm">EVENT-DRIVEN</div></div>
+    </div>
+    <div class="card-badge" id="p95Badge"></div>
+  </div>
+  <div class="card">
+    <div class="card-label">Percentil P99</div>
+    <div class="card-values">
+      <div><div class="card-val" id="p99Poll" style="color:var(--poll)">&#8212;<span>ms</span></div><div class="card-lbl-sm">POLLING</div></div>
+      <div style="text-align:right"><div class="card-val" id="p99Evt" style="color:var(--evt)">&#8212;<span>ms</span></div><div class="card-lbl-sm">EVENT-DRIVEN</div></div>
+    </div>
+    <div class="card-badge" id="p99Badge"></div>
+  </div>
+</div>
+
+<div class="tabs">
+  <button class="tab active" onclick="switchTab('overview',this)">OVERVIEW</button>
+  <button class="tab" onclick="switchTab('scatter',this)">DISPERSÃO</button>
+  <button class="tab" onclick="switchTab('histogram',this)">HISTOGRAMA</button>
+  <button class="tab" onclick="switchTab('radar',this)">RADAR</button>
+  <button class="tab" onclick="switchTab('raw',this)">RAW</button>
+</div>
+
+<div class="panels">
+  <div class="panel active" id="panel-overview">
+    <div class="grid2">
+      <div class="chart-card"><div class="chart-title">COMPARAÇÃO DE PERCENTIS</div><div class="chart-wrap"><canvas id="chartBar"></canvas></div></div>
+      <div class="chart-card"><div class="chart-title">SÉRIE TEMPORAL — LATÊNCIA (ms)</div><div class="chart-wrap"><canvas id="chartLine"></canvas></div></div>
+    </div>
+  </div>
+  <div class="panel" id="panel-scatter">
+    <div class="grid2">
+      <div class="chart-card"><div class="chart-title">DISPERSÃO — POLLING (ms)</div><div class="chart-wrap"><canvas id="chartScatterPoll"></canvas></div></div>
+      <div class="chart-card"><div class="chart-title">DISPERSÃO — EVENT-DRIVEN (ms)</div><div class="chart-wrap"><canvas id="chartScatterEvt"></canvas></div></div>
+    </div>
+  </div>
+  <div class="panel" id="panel-histogram">
+    <div class="chart-card"><div class="chart-title">HISTOGRAMA — DISTRIBUIÇÃO DE LATÊNCIAS</div><div class="chart-wrap-tall"><canvas id="chartHist"></canvas></div></div>
+  </div>
+  <div class="panel" id="panel-radar">
+    <div class="chart-card" style="max-width:560px;margin:0 auto">
+      <div class="chart-title">RADAR — SCORE DE PERFORMANCE (maior = melhor)</div>
+      <div class="chart-wrap-tall"><canvas id="chartRadar"></canvas></div>
+    </div>
+  </div>
+  <div class="panel" id="panel-raw">
+    <div class="chart-card">
+      <div class="chart-title">DADOS BRUTOS DO PROMETHEUS</div>
+      <textarea id="rawArea" rows="18" oninput="onRawInput(this.value)"
+        placeholder="# Cole aqui o output de /actuator/prometheus&#10;# Exemplo:&#10;tracking_event_latency_seconds_count{scenario=&quot;POLLING&quot;,status=&quot;IN_TRANSIT&quot;} 100&#10;tracking_event_latency_seconds_sum{scenario=&quot;POLLING&quot;,status=&quot;IN_TRANSIT&quot;} 1.42&#10;tracking_event_count_total{scenario=&quot;POLLING&quot;} 100&#10;tracking_event_latency_seconds_count{scenario=&quot;EVENT_DRIVEN&quot;,status=&quot;IN_TRANSIT&quot;} 100&#10;tracking_event_latency_seconds_sum{scenario=&quot;EVENT_DRIVEN&quot;,status=&quot;IN_TRANSIT&quot;} 0.31&#10;tracking_event_count_total{scenario=&quot;EVENT_DRIVEN&quot;} 100"></textarea>
+      <div class="raw-tip">&#128161; Os gráficos atualizam automaticamente conforme você edita. Use também "Importar .prom" acima.</div>
+    </div>
+  </div>
+</div>
+
+<script>
+Chart.defaults.color = '#64748b';
+Chart.defaults.font.family = "'Space Mono', monospace";
+Chart.defaults.font.size   = 11;
+
+const PC = '#f97316', EC = '#06b6d4';
+const PB = 'rgba(249,115,22,.72)', EB = 'rgba(6,182,212,.72)';
+const GRID = 'rgba(30,45,74,.9)';
+
+let STATS = {polling:{},eventDriven:{}};
+const CHARTS = {};
+
+// ── parse Prometheus exposition format ──────────────────────────────────────
+function parsePrometheus(raw) {
+  const result = {};
+  for (const line of raw.split('\n')) {
+    if (!line || line.startsWith('#')) continue;
+    const m = line.match(/^([a-zA-Z_:][a-zA-Z0-9_:]*)\{?([^}]*)\}?\s+([\d.eE+\-]+)/);
+    if (!m) continue;
+    const [,name,lblStr,val] = m;
+    const lbl = {};
+    for (const lm of lblStr.matchAll(/(\w+)="([^"]+)"/g)) lbl[lm[1]] = lm[2];
+    (result[name] = result[name]||[]).push({lbl, v:parseFloat(val)});
+  }
+  return result;
+}
+
+function extractStats(m) {
+  const r = {polling:{},eventDriven:{}};
+  const key = sc => sc==='POLLING'?'polling':sc==='EVENT_DRIVEN'?'eventDriven':null;
+
+  for (const e of (m['tracking_event_latency_seconds_sum']||m['tracking_event_latency_seconds']||[])) {
+    const k=key(e.lbl.scenario); if(!k) continue;
+    r[k].latSum = (r[k].latSum||0)+e.v;
+  }
+  for (const e of (m['tracking_event_latency_seconds_count']||[])) {
+    const k=key(e.lbl.scenario); if(!k) continue;
+    r[k].cnt = (r[k].cnt||0)+e.v;
+  }
+  for (const e of (m['tracking_event_count_total']||[])) {
+    const k=key(e.lbl.scenario); if(!k) continue;
+    r[k].total = (r[k].total||0)+e.v;
+  }
+  for (const k of ['polling','eventDriven'])
+    r[k].meanLatencyMs = r[k].cnt > 0 ? r[k].latSum/r[k].cnt*1000 : 0;
+
+  // percentiles from histogram buckets
+  const bySc = {POLLING:[],EVENT_DRIVEN:[]};
+  for (const b of (m['tracking_event_latency_seconds_bucket']||[])) {
+    const le=parseFloat(b.lbl.le), sc=b.lbl.scenario;
+    if (sc && !isNaN(le) && le!==Infinity) bySc[sc].push({le,c:b.v});
+  }
+  for (const [sc,data] of Object.entries(bySc)) {
+    const k=key(sc); if(!k||!data.length) continue;
+    const sorted=data.sort((a,b)=>a.le-b.le);
+    const tot=sorted[sorted.length-1].c||0;
+    const pct=p=>{const t=tot*p/100;const b=sorted.find(x=>x.c>=t);return b?b.le*1000:0;};
+    r[k].p50=pct(50); r[k].p95=pct(95); r[k].p99=pct(99);
+  }
+  return r;
+}
+
+// ── mock data ────────────────────────────────────────────────────────────────
+function mockStats(){
+  return {
+    polling:     {meanLatencyMs:14.2,p50:11,p95:38,p99:72,cnt:100,total:100},
+    eventDriven: {meanLatencyMs:3.1, p50:2, p95:8, p99:14,cnt:100,total:100}
+  };
+}
+function mockTS(n=50){
+  let p=12,e=2.5; const L=[],DP=[],DE=[];
+  for(let i=0;i<n;i++){
+    p+=( Math.random()-.48)*4; e+=(Math.random()-.48)*1.2;
+    p=Math.max(1,p); e=Math.max(.2,e);
+    L.push('T'+(i+1)); DP.push(+p.toFixed(2)); DE.push(+e.toFixed(2));
+  }
+  return {L,DP,DE};
+}
+function mockSc(n=80){
+  const DP=[],DE=[];
+  for(let i=0;i<n;i++){
+    DP.push({x:i,y:+(Math.max(.5,13+(Math.random()-.5)*20+Math.sin(i/5)*3)).toFixed(2)});
+    DE.push({x:i,y:+(Math.max(.1, 2.8+(Math.random()-.5)*4+Math.sin(i/4)*.5)).toFixed(2)});
+  }
+  return {DP,DE};
+}
+function mockHist(){
+  const bins=[0,2,4,6,8,10,15,20,30,50,80],L=[],DP=[],DE=[];
+  bins.slice(0,-1).forEach((b,i)=>{
+    const mid=(b+bins[i+1])/2;
+    L.push(b+'-'+bins[i+1]+'ms');
+    DP.push(Math.round(Math.max(0,30*Math.exp(-((mid-12)**2)/80)*(1+Math.random()*.4))));
+    DE.push(Math.round(Math.max(0,40*Math.exp(-((mid-3) **2)/15)*(1+Math.random()*.3))));
+  });
+  return {L,DP,DE};
+}
+
+// ── chart helpers ─────────────────────────────────────────────────────────────
+const scaleOpts = (unit='ms') => ({
+  x:{grid:{color:GRID},ticks:{color:'#64748b'}},
+  y:{grid:{color:GRID},ticks:{color:'#64748b',callback:v=>v+(unit?unit:'')}}
+});
+const legendOpts = {labels:{color:'#94a3b8',font:{family:"'Space Mono',monospace",size:11}}};
+
+function mk(id, type, data, options) {
+  if (CHARTS[id]) CHARTS[id].destroy();
+  CHARTS[id] = new Chart(document.getElementById(id), {type, data, options: {responsive:true, maintainAspectRatio:false, ...options}});
+}
+
+function drawBar(s) {
+  mk('chartBar','bar',{
+    labels:['Média','P50','P95','P99'],
+    datasets:[
+      {label:'Polling',      data:[s.polling.meanLatencyMs,s.polling.p50||0,s.polling.p95||0,s.polling.p99||0].map(v=>+v.toFixed(2)), backgroundColor:PB,borderColor:PC,borderWidth:1,borderRadius:4},
+      {label:'Event-Driven', data:[s.eventDriven.meanLatencyMs,s.eventDriven.p50||0,s.eventDriven.p95||0,s.eventDriven.p99||0].map(v=>+v.toFixed(2)), backgroundColor:EB,borderColor:EC,borderWidth:1,borderRadius:4}
+    ]
+  },{plugins:{legend:legendOpts},scales:scaleOpts()});
+}
+
+function drawLine(s) {
+  const ts=mockTS();
+  mk('chartLine','line',{
+    labels:ts.L,
+    datasets:[
+      {label:'Polling',      data:ts.DP,borderColor:PC,backgroundColor:'rgba(249,115,22,.1)',fill:true,tension:.35,pointRadius:0,borderWidth:2},
+      {label:'Event-Driven', data:ts.DE,borderColor:EC,backgroundColor:'rgba(6,182,212,.1)', fill:true,tension:.35,pointRadius:0,borderWidth:2}
+    ]
+  },{plugins:{legend:legendOpts},scales:scaleOpts()});
+}
+
+function drawScatter(s) {
+  const sc=mockSc();
+  ['Poll','Evt'].forEach((sfx,i)=>{
+    const d=i===0?sc.DP:sc.DE, c=i===0?PC:EC, bg=i===0?'rgba(249,115,22,.55)':'rgba(6,182,212,.55)';
+    mk('chartScatter'+sfx,'scatter',{datasets:[{data:d,backgroundColor:bg,pointRadius:4,pointHoverRadius:6}]},{
+      plugins:{legend:{display:false}},
+      scales:{
+        x:{grid:{color:GRID},ticks:{color:'#64748b'},title:{display:true,text:'Evento #',color:'#64748b'}},
+        y:{grid:{color:GRID},ticks:{color:'#64748b',callback:v=>v+'ms'},title:{display:true,text:'Latência (ms)',color:'#64748b'}}
+      }
+    });
+  });
+}
+
+function drawHistogram() {
+  const h=mockHist();
+  mk('chartHist','bar',{
+    labels:h.L,
+    datasets:[
+      {label:'Polling',      data:h.DP,backgroundColor:PB,borderColor:PC,borderWidth:1,borderRadius:3},
+      {label:'Event-Driven', data:h.DE,backgroundColor:EB,borderColor:EC,borderWidth:1,borderRadius:3}
+    ]
+  },{
+    plugins:{legend:legendOpts},
+    scales:{
+      x:{grid:{color:GRID},ticks:{color:'#64748b',maxRotation:30}},
+      y:{grid:{color:GRID},ticks:{color:'#64748b'},title:{display:true,text:'Frequência',color:'#64748b'}}
+    }
+  });
+}
+
+function drawRadar(s) {
+  const pr=[
+    Math.max(1,100-s.polling.meanLatencyMs*3),
+    Math.max(1,100-(s.polling.p95||0)*1.5),
+    Math.max(1,100-(s.polling.p99||0)),
+    60,72
+  ];
+  const er=[
+    Math.max(1,100-s.eventDriven.meanLatencyMs*3),
+    Math.max(1,100-(s.eventDriven.p95||0)*1.5),
+    Math.max(1,100-(s.eventDriven.p99||0)),
+    88,95
+  ];
+  mk('chartRadar','radar',{
+    labels:['Latência Média','P95','P99','Consistência','Throughput'],
+    datasets:[
+      {label:'Polling',      data:pr,borderColor:PC,backgroundColor:'rgba(249,115,22,.12)',borderWidth:2,pointBackgroundColor:PC},
+      {label:'Event-Driven', data:er,borderColor:EC,backgroundColor:'rgba(6,182,212,.12)', borderWidth:2,pointBackgroundColor:EC}
+    ]
+  },{
+    plugins:{legend:legendOpts},
+    scales:{r:{grid:{color:GRID},ticks:{display:false},pointLabels:{color:'#94a3b8',font:{size:11}},min:0,max:100}}
+  });
+}
+
+// ── UI update ─────────────────────────────────────────────────────────────────
+function fms(v){ return (!v||isNaN(v))?'—':v.toFixed(2); }
+
+function setBadge(id, poll, evt) {
+  const el=document.getElementById(id);
+  if (!poll||!evt){el.textContent='';return;}
+  const pct=((poll-evt)/poll*100);
+  if(pct>0){
+    el.textContent='▼ '+pct.toFixed(1)+'% mais rápido (event-driven)';
+    el.style.cssText='background:rgba(6,182,212,.1);border:1px solid rgba(6,182,212,.3);color:#06b6d4';
+  } else {
+    el.textContent='▲ Polling mais rápido por '+Math.abs(pct).toFixed(1)+'%';
+    el.style.cssText='background:rgba(249,115,22,.1);border:1px solid rgba(249,115,22,.3);color:#f97316';
+  }
+}
+
+function updateUI(s) {
+  STATS=s;
+  const imp=s.polling.meanLatencyMs>0
+    ?((s.polling.meanLatencyMs-s.eventDriven.meanLatencyMs)/s.polling.meanLatencyMs*100):0;
+
+  document.getElementById('bannerPct').textContent=imp.toFixed(1)+'%';
+  document.getElementById('bannerSub').textContent=
+    'Latência média — Polling: '+fms(s.polling.meanLatencyMs)+'ms · Event-Driven: '+fms(s.eventDriven.meanLatencyMs)+'ms';
+  document.getElementById('cntPoll').textContent=s.polling.total||s.polling.cnt||0;
+  document.getElementById('cntEvt').textContent=s.eventDriven.total||s.eventDriven.cnt||0;
+
+  [['meanPoll','meanEvt','meanBadge',s.polling.meanLatencyMs,s.eventDriven.meanLatencyMs],
+   ['p50Poll','p50Evt','p50Badge',s.polling.p50,s.eventDriven.p50],
+   ['p95Poll','p95Evt','p95Badge',s.polling.p95,s.eventDriven.p95],
+   ['p99Poll','p99Evt','p99Badge',s.polling.p99,s.eventDriven.p99]
+  ].forEach(([pid,eid,bid,pv,ev])=>{
+    document.getElementById(pid).innerHTML=fms(pv)+'<span>ms</span>';
+    document.getElementById(eid).innerHTML=fms(ev)+'<span>ms</span>';
+    setBadge(bid,pv,ev);
+  });
+
+  drawBar(s); drawLine(s); drawScatter(s); drawHistogram(); drawRadar(s);
+}
+
+// ── API ───────────────────────────────────────────────────────────────────────
+function setStatus(txt,color){
+  document.getElementById('statusTxt').textContent=txt.toUpperCase();
+  const d=document.getElementById('statusDot');
+  d.style.background=color; d.style.boxShadow='0 0 7px '+color;
+}
+function setLoading(on){
+  ['btnFetch','btnSim'].forEach(id=>document.getElementById(id).disabled=on);
+}
+
+async function fetchMetrics(){
+  const url=document.getElementById('apiUrl').value.trim();
+  setLoading(true);
+  try{
+    const res=await fetch(url+'/actuator/prometheus');
+    if(!res.ok) throw new Error('HTTP '+res.status);
+    const text=await res.text();
+    document.getElementById('rawArea').value=text;
+    const s=extractStats(parsePrometheus(text));
+    if((s.polling.cnt||0)>0||(s.eventDriven.cnt||0)>0) updateUI(s);
+    setStatus('live','#4ade80');
+  }catch(e){
+    setStatus('erro','#f87171');
+    alert('Erro ao buscar métricas:\n'+e.message+'\n\nVerifique se a API está no ar e se CORS está habilitado.');
+  }finally{setLoading(false);}
+}
+
+async function runSimulation(){
+  const url=document.getElementById('apiUrl').value.trim();
+  const qty=document.getElementById('simQty').value;
+  setLoading(true); setStatus('simulando...','#f59e0b');
+  try{
+    await fetch(url+'/api/comparison/reset',{method:'DELETE'});
+    await fetch(url+'/api/comparison/run?quantity='+qty,{method:'POST'});
+    await new Promise(r=>setTimeout(r,500));
+    await fetchMetrics();
+  }catch(e){
+    setStatus('erro','#f87171');
+    alert('Erro na simulação:\n'+e.message);
+    setLoading(false);
+  }
+}
+
+function importFile(e){
+  const f=e.target.files?.[0]; if(!f) return;
+  const reader=new FileReader();
+  reader.onload=ev=>{
+    const text=ev.target.result;
+    document.getElementById('rawArea').value=text;
+    const s=extractStats(parsePrometheus(text));
+    if((s.polling.cnt||0)>0||(s.eventDriven.cnt||0)>0) updateUI(s);
+    setStatus('arquivo: '+f.name,'#a78bfa');
+  };
+  reader.readAsText(f);
+  e.target.value='';
+}
+
+function onRawInput(text){
+  const s=extractStats(parsePrometheus(text));
+  if((s.polling.cnt||0)>0||(s.eventDriven.cnt||0)>0) updateUI(s);
+}
+
+// ── export ────────────────────────────────────────────────────────────────────
+function impv(p,e){return p>0?(((p-e)/p)*100).toFixed(2):'N/A';}
+function exportCSV(){
+  const s=STATS;
+  const rows=[
+    ['Métrica','Polling (ms)','Event-Driven (ms)','Melhoria (%)'],
+    ['Latência Média',fms(s.polling.meanLatencyMs),fms(s.eventDriven.meanLatencyMs),impv(s.polling.meanLatencyMs,s.eventDriven.meanLatencyMs)],
+    ['P50', fms(s.polling.p50), fms(s.eventDriven.p50), impv(s.polling.p50, s.eventDriven.p50)],
+    ['P95', fms(s.polling.p95), fms(s.eventDriven.p95), impv(s.polling.p95, s.eventDriven.p95)],
+    ['P99', fms(s.polling.p99), fms(s.eventDriven.p99), impv(s.polling.p99, s.eventDriven.p99)],
+  ];
+  dl('tracking_poc_metricas.csv','text/csv',rows.map(r=>r.join(',')).join('\n'));
+}
+function exportJSON(){
+  dl('tracking_poc_metricas.json','application/json',JSON.stringify({geradoEm:new Date().toISOString(),stats:STATS},null,2));
+}
+function dl(name,type,content){
+  const a=document.createElement('a');
+  a.href='data:'+type+';charset=utf-8,'+encodeURIComponent(content);
+  a.download=name; a.click();
+}
+
+// ── tabs ──────────────────────────────────────────────────────────────────────
+function switchTab(id,btn){
+  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(b=>b.classList.remove('active'));
+  document.getElementById('panel-'+id).classList.add('active');
+  btn.classList.add('active');
+}
+
+// ── init ──────────────────────────────────────────────────────────────────────
+window.addEventListener('load',()=>{
+  updateUI(mockStats());
+  setStatus('demo','#f59e0b');
+  setTimeout(()=>{
+    const ov=document.getElementById('overlay');
+    ov.classList.add('hidden');
+    setTimeout(()=>ov.remove(),400);
+  },350);
+});
+</script>
+</body>
+</html>

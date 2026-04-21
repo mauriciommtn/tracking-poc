@@ -36,7 +36,7 @@ import java.util.stream.Collectors;
  *   <li>Mínimo e máximo</li>
  * </ul>
  *
- * @author PoC Team
+ * @author Mauricio Nogueira
  * @version 1.0.0
  */
 @Component

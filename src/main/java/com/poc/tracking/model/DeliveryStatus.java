@@ -6,7 +6,7 @@ package com.poc.tracking.model;
  * <p>Os status seguem o fluxo natural de uma entrega, desde a confirmação
  * do pedido até a entrega final ou ocorrência de falha.
  *
- * @author PoC Team
+ * @author Mauricio Nogueira
  * @version 1.0.0
  */
 public enum DeliveryStatus {

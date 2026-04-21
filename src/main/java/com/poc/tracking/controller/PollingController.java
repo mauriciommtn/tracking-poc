@@ -30,12 +30,13 @@ import java.util.Optional;
  *   <li>{@code GET /api/polling/metrics} - Retorna estatísticas do Cenário 1.</li>
  * </ul>
  *
- * @author PoC Team
+ * @author Mauricio Nogueira
  * @version 1.0.0
  * @see ApiGateway
  * @see EventStore
  */
 @RestController
+@CrossOrigin(origins = "*")
 @RequestMapping("/api/polling")
 public class PollingController {
 

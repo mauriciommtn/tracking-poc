@@ -19,7 +19,7 @@ import static org.assertj.core.api.Assertions.*;
  * <p>Cobre registro de métricas, cálculo de estatísticas descritivas,
  * latências brutas, agrupamento por cenário e reset.
  *
- * @author PoC Team
+ * @author Mauricio Nogueira
  * @version 1.0.0
  */
 @DisplayName("PerformanceMonitor - Testes Unitários")

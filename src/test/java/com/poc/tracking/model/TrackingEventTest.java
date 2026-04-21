@@ -13,7 +13,7 @@ import static org.assertj.core.api.Assertions.*;
  * <p>Cobre criação via factory method, unicidade de IDs, cálculo de latência
  * e imutabilidade garantida pelo record Java.
  *
- * @author PoC Team
+ * @author Mauricio Nogueira
  * @version 1.0.0
  */
 @DisplayName("TrackingEvent - Testes Unitários")

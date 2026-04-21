@@ -29,12 +29,13 @@ import java.util.Map;
  *   <li>{@code GET /api/events/metrics} - Retorna estatísticas do Cenário 2.</li>
  * </ul>
  *
- * @author PoC Team
+ * @author Mauricio Nogueira
  * @version 1.0.0
  * @see ApiGateway
  * @see PerformanceMonitor
  */
 @RestController
+@CrossOrigin(origins = "*")
 @RequestMapping("/api/events")
 public class EventDrivenController {
 

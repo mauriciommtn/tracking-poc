@@ -20,7 +20,7 @@ import static org.assertj.core.api.Assertions.*;
  * <p>Cobre processamento de eventos, persistência no store, registro de métricas
  * e publicação no stream reativo para SSE.
  *
- * @author PoC Team
+ * @author Mauricio Nogueira
  * @version 1.0.0
  */
 @DisplayName("ApiGateway - Testes Unitários")

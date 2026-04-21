@@ -497,4 +497,4 @@ Use o array `latenciesPoll` e `latenciesEvent` retornados em `/api/comparison/ru
 
 ## Autor
 
-PoC Team — Java 21 + Spring Boot 3.2 + Project Reactor
+Mauricio Nogueira — Java 21 + Spring Boot 3.2 + Project Reactor

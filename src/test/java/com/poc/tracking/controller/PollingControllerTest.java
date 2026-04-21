@@ -26,7 +26,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
  * <p>Utiliza {@link SpringBootTest} com contexto completo e {@link MockMvc}
  * para validar os endpoints HTTP do Cenário 1 (Polling).
  *
- * @author PoC Team
+ * @author Mauricio Nogueira
  * @version 1.0.0
  */
 @SpringBootTest

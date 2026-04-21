@@ -17,7 +17,7 @@ import static org.assertj.core.api.Assertions.*;
  *
  * <p>Cobre persistência, recuperação por orderId, latest event, contagem e limpeza.
  *
- * @author PoC Team
+ * @author Mauricio Nogueira
  * @version 1.0.0
  */
 @DisplayName("EventStore - Testes Unitários")
