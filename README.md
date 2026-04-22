@@ -1,4 +1,4 @@
-# Tracking PoC — Polling vs Event-Driven
+# Stream Path Events [PoC] — Polling vs Event-Driven
 
 > **Prova de Conceito** comparando a arquitetura de **Polling** (Cenário 1) com a arquitetura **Event-Driven via SSE** (Cenário 2) para sistemas de rastreamento de entregas em tempo real.
 
@@ -38,7 +38,7 @@ Os dados coletados são submetidos à análise estatística descritiva (média, 
 
 ```
 ┌──────────────────────────────────────────────────────────────────┐
-│                         tracking-poc                             │
+│                         stream-path-events                       │
 │                                                                  │
 │  ┌─────────────────┐    ┌─────────────────┐    ┌─────────────┐  │
 │  │  EventEmulator  │───▶│   ApiGateway    │───▶│ EventStore  │  │
@@ -230,9 +230,10 @@ tracking-poc/
 └── src/
     ├── main/
     │   ├── java/com/poc/tracking/
-    │   │   ├── TrackingPocApplication.java      # Ponto de entrada Spring Boot
+    │   │   ├── StreamPathEventsApplication.java      # Ponto de entrada Spring Boot
     │   │   ├── config/
-    │   │   │   └── AppConfig.java               # Thread pool e beans de infraestrutura
+    │   │   │   └── AppConfig.java               # Thread pool e beans de 
+    │   │   │   └── CorsFilter.java              # Allow Cors Origin infraestrutura
     │   │   ├── controller/
     │   │   │   ├── PollingController.java        # Endpoints Cenário 1
     │   │   │   ├── EventDrivenController.java    # Endpoints Cenário 2 (SSE)
@@ -251,6 +252,7 @@ tracking-poc/
     │   │       └── Scenario.java                 # Enum: cenário da PoC
     │   └── resources/
     │       └── application.yml                   # Configurações da aplicação
+    │       └── templates/index.html              # Pagina HTML para resumo da execução
     └── test/
         └── java/com/poc/tracking/
             ├── controller/
@@ -286,6 +288,7 @@ tracking-poc/
 | reactor-test | 3.6.x | `StepVerifier` para testes de streams reativos |
 | MockMvc | — | Testes de integração dos controllers |
 | Lombok | 1.18.x | Redução de boilerplate |
+| Chart.js | 4.4.x | Pagina HTML para exibição dos dados |
 
 ---
 
@@ -322,6 +325,11 @@ tracking:
   emulator:
     total-events: 100         # Eventos por ciclo de simulação
     event-interval-ms: 200    # Intervalo entre eventos no emulador
+  management.metrics.distribution:
+    percentiles:
+    	tracking.event.latency: 0.5,0.95,0.99
+    percentiles-histogram:
+    	tracking.event.latency: true
 ```
 
 ---

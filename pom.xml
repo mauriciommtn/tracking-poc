@@ -12,9 +12,9 @@
 	</parent>
 
 	<groupId>com.poc</groupId>
-	<artifactId>tracking-poc</artifactId>
+	<artifactId>stream-path-events</artifactId>
 	<version>1.0.0-SNAPSHOT</version>
-	<name>tracking-poc</name>
+	<name>stream-path-events</name>
 	<description>PoC: Polling vs Event-Driven Tracking System</description>
 
 	<properties>

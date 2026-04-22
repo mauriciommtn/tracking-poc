@@ -25,7 +25,7 @@ import org.springframework.scheduling.annotation.EnableScheduling;
  */
 @SpringBootApplication
 @EnableScheduling
-public class TrackingPocApplication {
+public class StreamPathEventsApplication {
 
     /**
      * Ponto de entrada da aplicação Spring Boot.
@@ -33,6 +33,6 @@ public class TrackingPocApplication {
      * @param args argumentos de linha de comando
      */
     public static void main(String[] args) {
-        SpringApplication.run(TrackingPocApplication.class, args);
+        SpringApplication.run(StreamPathEventsApplication.class, args);
     }
 }
