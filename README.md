@@ -232,8 +232,8 @@ tracking-poc/
     │   ├── java/com/poc/tracking/
     │   │   ├── StreamPathEventsApplication.java      # Ponto de entrada Spring Boot
     │   │   ├── config/
-    │   │   │   └── AppConfig.java               # Thread pool e beans de 
-    │   │   │   └── CorsFilter.java              # Allow Cors Origin infraestrutura
+    │   │   │   └── AppConfig.java               # Thread pool e beans de infraestrutura
+    │   │   │   └── CorsFilter.java              # Allow Cors Origin 
     │   │   ├── controller/
     │   │   │   ├── PollingController.java        # Endpoints Cenário 1
     │   │   │   ├── EventDrivenController.java    # Endpoints Cenário 2 (SSE)
