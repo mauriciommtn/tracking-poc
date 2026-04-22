@@ -71,12 +71,15 @@ public class PerformanceMonitor {
     public void record(TrackingEvent event, long latencyMs) {
         // Micrometer timer
         Timer.builder("tracking.event.latency")
-                .tag("scenario", event.scenario().name())
-                .tag("status", event.status().name())
-                .description("Latência de processamento de eventos de rastreamento")
-                .register(meterRegistry)
-                .record(Duration.ofMillis(latencyMs));
-
+        		.tag("scenario", event.scenario().name())
+        		.publishPercentiles(0.5, 0.95, 0.99)      // ← expõe quantile="0.5/0.95/0.99"
+        		.publishPercentileHistogram(true)           // ← expõe _bucket para Grafana
+        		.minimumExpectedValue(Duration.ofMillis(1))
+        		.maximumExpectedValue(Duration.ofSeconds(10))
+        		.register(meterRegistry)
+        		.record(Duration.ofMillis(latencyMs));
+        
+        
         // Contador de eventos por cenário
         meterRegistry.counter("tracking.event.count",
                 "scenario", event.scenario().name(),

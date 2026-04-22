@@ -1,34 +1,39 @@
 server:
-  port: 8080
+    port: 8080
 
 spring:
-  application:
-    name: tracking-poc
+    application:
+        name: tracking-poc
 
 management:
-  endpoints:
-    web:
-      exposure:
-        include: health,info,prometheus,metrics
-  endpoint:
-    prometheus:
-      enabled: true
-  metrics:
-    export:
-      prometheus:
-        enabled: true
-
+    endpoints:
+        web:
+            exposure:
+                include: health,info,prometheus,metrics
+    endpoint:
+        prometheus:
+            enabled: true
+    metrics:
+        distribution:
+            percentiles:
+                tracking.event.latency: 0.5,0.95,0.99
+percentiles-histogram:
+tracking.event.latency: true
+prometheus:
+    metrics:
+        export:
+            enabled: true
 logging:
-  level:
-    com.poc.tracking: DEBUG
-  pattern:
-    console: "%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n"
+    level:
+        com.poc.tracking: DEBUG
+    pattern:
+        console: "%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n"
 
 tracking:
-  polling:
-    interval-ms: 1000
-  event:
-    buffer-size: 256
-  emulator:
-    total-events: 100
-    event-interval-ms: 200
+    polling:
+        interval-ms: 1000
+    event:
+        buffer-size: 256
+    emulator:
+        total-events: 100
+        event-interval-ms: 200
